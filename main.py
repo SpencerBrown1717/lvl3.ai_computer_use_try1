@@ -9,7 +9,7 @@ import sys
 import time
 import logging
 import requests
-from agent import SimpleComputerAgent
+from src.core.agent import SimpleComputerAgent
 from dotenv import load_dotenv
 
 # Set up logging
@@ -65,7 +65,7 @@ def main():
         else:
             print("\n⚠️  MCP Server is not running")
             print("   To enable remote control, start the MCP server with:")
-            print("   python mcp_server.py")
+            print("   python src/api/mcp_server.py")
         
         print("\nEnter commands to control the computer directly.")
         print("Type 'help' for available commands or 'exit' to quit.")

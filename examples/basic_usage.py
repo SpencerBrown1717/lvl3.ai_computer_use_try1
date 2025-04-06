@@ -6,7 +6,12 @@ This example demonstrates how to use the SimpleComputerAgent with proper error h
 
 import logging
 import time
-from agent import SimpleComputerAgent
+import sys
+import os
+
+# Add parent directory to path to import modules
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.core.agent import SimpleComputerAgent
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

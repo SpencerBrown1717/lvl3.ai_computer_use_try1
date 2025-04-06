@@ -1,0 +1,24 @@
+{
+  "counters": {},
+  "gauges": {},
+  "histograms": {},
+  "timers": {},
+  "system": {
+    "timestamps": [
+      1743918462.344505,
+      1743918462.5463428
+    ],
+    "cpu_percent": [
+      21.0,
+      8.0
+    ],
+    "memory_percent": [
+      94.2,
+      94.2
+    ],
+    "disk_usage_percent": [
+      2.3,
+      2.3
+    ]
+  }
+}

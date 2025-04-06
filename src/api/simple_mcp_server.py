@@ -98,6 +98,23 @@ def move_mouse():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/v1/mouse/click', methods=['POST'])
+@require_api_key
+def click_mouse():
+    """Mock mouse click endpoint"""
+    try:
+        data = request.json
+        x = data.get('x')
+        y = data.get('y')
+        
+        # If x and y are provided, we assume a click at that position
+        # Otherwise, click at current position
+        position_info = {"x": x, "y": y} if x is not None and y is not None else {"at_current_position": True}
+            
+        return jsonify({"success": True, "message": "Mouse clicked (mock)", "position": position_info})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/v1/keyboard/press', methods=['POST'])
 @require_api_key
 def press_key():
@@ -110,6 +127,21 @@ def press_key():
             return jsonify({"success": False, "error": "Missing key parameter"}), 400
             
         return jsonify({"success": True, "message": "Key pressed (mock)", "key": key})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/v1/keyboard/type', methods=['POST'])
+@require_api_key
+def type_text():
+    """Mock text typing endpoint"""
+    try:
+        data = request.json
+        text = data.get('text')
+        
+        if not text:
+            return jsonify({"success": False, "error": "Missing text parameter"}), 400
+            
+        return jsonify({"success": True, "message": "Text typed (mock)", "text": text})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 

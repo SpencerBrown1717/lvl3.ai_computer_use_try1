@@ -8,7 +8,10 @@ import logging
 import os
 import sys
 import time
-from mcp_client import MCPClient
+
+# Add parent directory to path to import modules
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.api.mcp_client import MCPClient
 from dotenv import load_dotenv
 
 # Set up logging
@@ -41,7 +44,7 @@ def main():
             logger.info(f"MCP Server is running: {status}")
         except Exception as e:
             logger.error(f"Failed to connect to MCP server: {e}")
-            logger.error("Make sure the MCP server is running (python mcp_server.py)")
+            logger.error("Make sure the MCP server is running (python src/api/mcp_server.py)")
             return 1
             
         # Example 1: Take a screenshot

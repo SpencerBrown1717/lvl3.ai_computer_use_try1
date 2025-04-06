@@ -101,9 +101,12 @@ class MCPClient:
         except requests.exceptions.ConnectionError:
             print("Error: Could not connect to MCP server")
             return {"success": False, "error": "Connection error"}
-        except requests.exceptions.RateLimitExceeded:
-            print("Error: Rate limit exceeded. Try again later.")
-            return {"success": False, "error": "Rate limit exceeded"}
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                print("Error: Rate limit exceeded. Try again later.")
+                return {"success": False, "error": "Rate limit exceeded"}
+            print(f"HTTP Error: {str(e)}")
+            return {"success": False, "error": str(e)}
         except Exception as e:
             print(f"Error: {str(e)}")
             return {"success": False, "error": str(e)}

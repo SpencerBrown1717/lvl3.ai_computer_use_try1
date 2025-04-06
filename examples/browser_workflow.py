@@ -8,7 +8,10 @@ import logging
 import time
 import os
 import sys
-from browser_agent import BrowserAgent
+
+# Add parent directory to path to import modules
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.core.browser_agent import BrowserAgent
 from dotenv import load_dotenv
 
 # Set up logging

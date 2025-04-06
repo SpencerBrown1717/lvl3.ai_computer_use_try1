@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  computer-agent:
+    build: .
+    ports:
+      - "5900:5900"  # VNC port
+    environment:
+      - DISPLAY=:1
+    volumes:
+      - ./screenshots:/app/screenshots
+      - ./reference_images:/app/reference_images
+    restart: unless-stopped

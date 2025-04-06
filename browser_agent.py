@@ -4,6 +4,12 @@ import os
 import cv2
 import numpy as np
 from agent import SimpleComputerAgent
+import subprocess
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('BrowserAgent')
 
 class BrowserAgent(SimpleComputerAgent):
     def __init__(self):
@@ -24,13 +30,17 @@ class BrowserAgent(SimpleComputerAgent):
             (x, y) coordinates of the center of the image if found, None otherwise
         """
         try:
+            if not os.path.exists(image_path):
+                logger.error(f"Image file not found: {image_path}")
+                return None
+                
             location = pyautogui.locateOnScreen(image_path, confidence=confidence)
             if location:
                 point = pyautogui.center(location)
                 return (point.x, point.y)
             return None
         except Exception as e:
-            print(f"Error finding image: {e}")
+            logger.error(f"Error finding image: {e}")
             return None
     
     def save_reference_image(self, name, region=None):
@@ -44,11 +54,15 @@ class BrowserAgent(SimpleComputerAgent):
         Returns:
             Path to the saved image
         """
-        image_path = f"{self.images_dir}/{name}.png"
-        screenshot = pyautogui.screenshot(region=region)
-        screenshot.save(image_path)
-        print(f"Saved reference image: {image_path}")
-        return image_path
+        try:
+            image_path = f"{self.images_dir}/{name}.png"
+            screenshot = pyautogui.screenshot(region=region)
+            screenshot.save(image_path)
+            logger.info(f"Saved reference image: {image_path}")
+            return image_path
+        except Exception as e:
+            logger.error(f"Error saving reference image: {e}")
+            return None
     
     def click_on_image(self, image_path, confidence=0.8):
         """
@@ -61,13 +75,21 @@ class BrowserAgent(SimpleComputerAgent):
         Returns:
             True if successful, False otherwise
         """
-        coords = self.find_on_screen(image_path, confidence)
-        if coords:
-            self.move(*coords)
-            self.click()
-            return True
-        else:
-            print(f"Could not find image: {image_path}")
+        try:
+            if not os.path.exists(image_path):
+                logger.error(f"Image file not found: {image_path}")
+                return False
+                
+            coords = self.find_on_screen(image_path, confidence)
+            if coords:
+                self.move(*coords)
+                self.click()
+                return True
+            else:
+                logger.warning(f"Could not find image: {image_path}")
+                return False
+        except Exception as e:
+            logger.error(f"Error clicking on image: {e}")
             return False
     
     def open_browser(self, browser_name="chrome"):
@@ -86,12 +108,30 @@ class BrowserAgent(SimpleComputerAgent):
             "safari": "open -a Safari"
         }
         
-        if browser_name.lower() in browser_commands:
-            os.system(browser_commands[browser_name.lower()])
-            time.sleep(2)  # Wait for browser to open
+        try:
+            if browser_name.lower() not in browser_commands:
+                logger.error(f"Unknown browser: {browser_name}")
+                return False
+                
+            # Use subprocess instead of os.system for better error handling
+            process = subprocess.run(
+                browser_commands[browser_name.lower()], 
+                shell=True, 
+                capture_output=True,
+                text=True
+            )
+            
+            if process.returncode != 0:
+                logger.error(f"Failed to open browser: {process.stderr}")
+                return False
+                
+            # Wait for browser to open
+            time.sleep(2)
+            logger.info(f"Successfully opened browser: {browser_name}")
             return True
-        else:
-            print(f"Unknown browser: {browser_name}")
+            
+        except Exception as e:
+            logger.error(f"Error opening browser: {e}")
             return False
     
     def navigate_to_url(self, url):
@@ -104,18 +144,28 @@ class BrowserAgent(SimpleComputerAgent):
         Returns:
             True if successful, False otherwise
         """
-        # Press Command+L to focus on address bar
-        pyautogui.hotkey('command', 'l')
-        time.sleep(0.5)
-        
-        # Type the URL
-        self.type_text(url)
-        time.sleep(0.5)
-        
-        # Press Enter
-        pyautogui.press('enter')
-        time.sleep(2)  # Wait for page to load
-        return True
+        try:
+            # Validate URL format
+            if not url.startswith(('http://', 'https://')):
+                logger.warning(f"URL does not start with http:// or https://: {url}")
+                url = f"https://{url}"
+                
+            # Press Command+L to focus on address bar
+            pyautogui.hotkey('command', 'l')
+            time.sleep(0.5)
+            
+            # Type the URL
+            self.type_text(url)
+            time.sleep(0.5)
+            
+            # Press Enter
+            pyautogui.press('enter')
+            time.sleep(2)  # Wait for page to load
+            logger.info(f"Navigated to URL: {url}")
+            return True
+        except Exception as e:
+            logger.error(f"Error navigating to URL: {e}")
+            return False
     
     def press(self, key):
         """
@@ -127,8 +177,11 @@ class BrowserAgent(SimpleComputerAgent):
         Returns:
             None
         """
-        pyautogui.press(key)
-        print(f"Pressed key: {key}")
+        try:
+            pyautogui.press(key)
+            logger.info(f"Pressed key: {key}")
+        except Exception as e:
+            logger.error(f"Error pressing key: {e}")
     
     def create_workflow(self, name, steps):
         """
@@ -142,31 +195,34 @@ class BrowserAgent(SimpleComputerAgent):
             Workflow function that executes all steps
         """
         def workflow():
-            print(f"Running workflow: {name}")
+            logger.info(f"Running workflow: {name}")
             for step in steps:
                 action, params = step
-                if action == "open_browser":
-                    self.open_browser(params)
-                elif action == "navigate_to_url":
-                    self.navigate_to_url(params)
-                elif action == "click_on_image":
-                    self.click_on_image(params)
-                elif action == "wait":
-                    time.sleep(params)
-                elif action == "type":
-                    self.type_text(params)
-                elif action == "press":
-                    pyautogui.press(params)
-                elif action == "hotkey":
-                    pyautogui.hotkey(*params.split('+'))
-                elif action == "move":
-                    x, y = params
-                    self.move(x, y)
-                elif action == "click":
-                    self.click()
-                else:
-                    print(f"Unknown action: {action}")
-            print(f"Workflow {name} completed")
+                try:
+                    if action == "open_browser":
+                        self.open_browser(params)
+                    elif action == "navigate_to_url":
+                        self.navigate_to_url(params)
+                    elif action == "click_on_image":
+                        self.click_on_image(params)
+                    elif action == "wait":
+                        time.sleep(params)
+                    elif action == "type":
+                        self.type_text(params)
+                    elif action == "press":
+                        pyautogui.press(params)
+                    elif action == "hotkey":
+                        pyautogui.hotkey(*params.split('+'))
+                    elif action == "move":
+                        x, y = params
+                        self.move(x, y)
+                    elif action == "click":
+                        self.click()
+                    else:
+                        logger.warning(f"Unknown action: {action}")
+                except Exception as e:
+                    logger.error(f"Error executing workflow step {action}: {e}")
+            logger.info(f"Workflow {name} completed")
         
         return workflow
     

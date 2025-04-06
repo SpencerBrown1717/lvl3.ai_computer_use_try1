@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     xterm \
     fluxbox \
     wget \
+    curl \
     firefox-esr \
     libx11-dev \
     libxtst-dev \
@@ -25,6 +26,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install python-dotenv
+RUN pip install --no-cache-dir python-dotenv
+
 # Copy the rest of the application
 COPY . .
 
@@ -32,11 +36,40 @@ COPY . .
 ENV DISPLAY=:1
 
 # Create a startup script
-RUN echo '#!/bin/bash\nXvfb $DISPLAY -screen 0 1280x800x24 &\nsleep 1\nx11vnc -display $DISPLAY -forever -nopw &\nfluxbox &\npython /app/main.py' > /app/start.sh \
+RUN echo '#!/bin/bash\n\
+# Start virtual display\n\
+Xvfb $DISPLAY -screen 0 1280x800x24 &\n\
+sleep 1\n\
+x11vnc -display $DISPLAY -forever -nopw &\n\
+fluxbox &\n\
+\n\
+# Start MCP server\n\
+echo "Starting MCP server..."\n\
+python /app/mcp_server.py &\n\
+MCP_PID=$!\n\
+\n\
+# Wait for MCP server to be ready\n\
+echo "Waiting for MCP server to be ready..."\n\
+for i in {1..10}; do\n\
+  if curl -s http://localhost:5000/api/v1/status > /dev/null; then\n\
+    echo "MCP server is ready!"\n\
+    break\n\
+  fi\n\
+  echo "Waiting for MCP server... $i/10"\n\
+  sleep 2\n\
+done\n\
+\n\
+# Start main application\n\
+echo "Starting main application..."\n\
+python /app/main.py\n\
+\n\
+# Keep container running if main app exits\n\
+wait $MCP_PID\n\
+' > /app/start.sh \
     && chmod +x /app/start.sh
 
-# Expose VNC port
-EXPOSE 5900
+# Expose VNC port and MCP server port
+EXPOSE 5900 5000
 
 # Command to run
 CMD ["/app/start.sh"]

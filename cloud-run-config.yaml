@@ -8,7 +8,8 @@ spec:
       containers:
       - image: gcr.io/YOUR_PROJECT_ID/computer-agent:latest
         ports:
-        - containerPort: 5900
+        - containerPort: 5000
+          name: http1
         resources:
           limits:
             cpu: "1"
@@ -19,3 +20,17 @@ spec:
         env:
         - name: DISPLAY
           value: ":1"
+        - name: MCP_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: api-key
+        - name: MCP_RATE_LIMIT
+          value: "60"
+        - name: MCP_BIND_HOST
+          value: "0.0.0.0"
+        - name: MCP_PORT
+          value: "5000"
+        - name: MCP_DEBUG
+          value: "False"
+        command: ["/app/start.sh"]

@@ -21,9 +21,10 @@ def run_tests(test_pattern=None, verbose=False, html_report=True):
     """Run all tests with coverage reporting"""
     # Start coverage
     cov = coverage.Coverage(
-        source=['agent.py', 'browser_agent.py', 'mcp_server.py', 'mcp_client.py', 
-                'resilience.py', 'computer_vision.py', 'workflow.py', 'monitoring.py', 
-                'dashboard.py'],
+        source=['src/core/agent.py', 'src/core/browser_agent.py', 'src/api/mcp_server.py', 
+                'src/api/mcp_client.py', 'src/utils/resilience.py', 'src/core/computer_vision.py', 
+                'src/workflows/workflow.py', 'src/monitoring/monitoring.py', 
+                'src/monitoring/dashboard.py'],
         omit=['*/__pycache__/*', '*/test_*.py', '*/tests/*']
     )
     cov.start()

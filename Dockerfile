@@ -45,7 +45,7 @@ fluxbox &\n\
 \n\
 # Start MCP server\n\
 echo "Starting MCP server..."\n\
-python /app/mcp_server.py &\n\
+python -m src.api.mcp_server &\n\
 MCP_PID=$!\n\
 \n\
 # Wait for MCP server to be ready\n\
@@ -61,7 +61,7 @@ done\n\
 \n\
 # Start main application\n\
 echo "Starting main application..."\n\
-python /app/main.py\n\
+python -m main\n\
 \n\
 # Keep container running if main app exits\n\
 wait $MCP_PID\n\

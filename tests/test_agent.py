@@ -10,7 +10,7 @@ from PIL import Image
 
 # Add parent directory to path to import agent module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from agent import SimpleComputerAgent
+from src.core.agent import SimpleComputerAgent
 
 class TestSimpleComputerAgent(unittest.TestCase):
     """Test cases for SimpleComputerAgent"""
@@ -18,7 +18,7 @@ class TestSimpleComputerAgent(unittest.TestCase):
     def setUp(self):
         """Set up test environment"""
         # Create a mock for pyautogui
-        self.pyautogui_patcher = patch('agent.pyautogui')
+        self.pyautogui_patcher = patch('src.core.agent.pyautogui')
         self.mock_pyautogui = self.pyautogui_patcher.start()
         
         # Mock screen size

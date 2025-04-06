@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 # Add parent directory to path to import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from workflow import (
+from src.workflows.workflow import (
     WorkflowEngine, 
     Task, 
     Workflow, 
@@ -23,11 +23,11 @@ from workflow import (
     WorkflowStatus,
     TaskResult
 )
-from monitoring import MonitoringSystem, LogLevel
-from resilience import CircuitBreaker, RetryWithExponentialBackoff
-from agent import SimpleComputerAgent
-from browser_agent import BrowserAgent
-from computer_vision import ComputerVision
+from src.monitoring.monitoring import MonitoringSystem, LogLevel
+from src.utils.resilience import CircuitBreaker, RetryWithExponentialBackoff
+from src.core.agent import SimpleComputerAgent
+from src.core.browser_agent import BrowserAgent
+from src.core.computer_vision import ComputerVision
 
 
 class MockAgent(SimpleComputerAgent):

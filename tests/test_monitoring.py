@@ -16,9 +16,9 @@ import requests
 # Add parent directory to path to import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from monitoring import MonitoringSystem, LogLevel, MetricType
-from dashboard import Dashboard
-from resilience import CircuitBreaker
+from src.monitoring.monitoring import MonitoringSystem, LogLevel, MetricType
+from src.monitoring.dashboard import Dashboard
+from src.utils.resilience import CircuitBreaker
 
 
 class TestMonitoringSystem(unittest.TestCase):
@@ -61,6 +61,9 @@ class TestMonitoringSystem(unittest.TestCase):
         # Increment a counter
         self.monitoring.increment_counter("test_counter", 5, {"tag": "value"})
         
+        # Force metrics collection to ensure counter is registered
+        self.monitoring._collect_metrics()
+        
         # Get metrics summary
         metrics = self.monitoring.get_metrics_summary()
         
@@ -74,6 +77,9 @@ class TestMonitoringSystem(unittest.TestCase):
         """Test recording timers"""
         # Record a timer
         self.monitoring.record_timer("test_timer", 0.5, {"tag": "value"})
+        
+        # Force metrics collection to ensure timer is registered
+        self.monitoring._collect_metrics()
         
         # Get metrics summary
         metrics = self.monitoring.get_metrics_summary()
@@ -89,6 +95,9 @@ class TestMonitoringSystem(unittest.TestCase):
         """Test recording gauges"""
         # Record a gauge
         self.monitoring.record_gauge("test_gauge", 42, {"tag": "value"})
+        
+        # Force metrics collection to ensure gauge is registered
+        self.monitoring._collect_metrics()
         
         # Get metrics summary
         metrics = self.monitoring.get_metrics_summary()
@@ -118,9 +127,9 @@ class TestMonitoringSystem(unittest.TestCase):
         # Create a circuit breaker with monitoring
         circuit = CircuitBreaker(
             name="test_circuit",
-            max_failures=3,
-            reset_timeout=0.1,
-            monitoring_system=self.monitoring
+            failure_threshold=3,
+            recovery_timeout=0.1,
+            monitoring=self.monitoring
         )
         
         # Simulate failures
@@ -131,6 +140,9 @@ class TestMonitoringSystem(unittest.TestCase):
                     
         # Verify circuit is open
         self.assertEqual(circuit.state, CircuitBreaker.OPEN)
+        
+        # Force metrics collection
+        self.monitoring._collect_metrics()
         
         # Get metrics summary
         metrics = self.monitoring.get_metrics_summary()
@@ -145,6 +157,9 @@ class TestMonitoringSystem(unittest.TestCase):
         
         # Verify circuit is half-open
         self.assertEqual(circuit.state, CircuitBreaker.HALF_OPEN)
+        
+        # Force metrics collection
+        self.monitoring._collect_metrics()
         
         # Get updated metrics
         metrics = self.monitoring.get_metrics_summary()
